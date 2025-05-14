@@ -2,6 +2,7 @@ package com.example.mobilalk;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -18,6 +19,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseAuthInvalidUserException;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.example.mobilalk.model.User;
 
 public class LoginActivity extends AppCompatActivity {
     private TextInputLayout emailInputLayout;
@@ -27,15 +30,17 @@ public class LoginActivity extends AppCompatActivity {
     private Button loginButton;
     private TextView registerTextView;
     private ImageButton backButton;
-    private FirebaseAuth mAuth;
+    private FirebaseAuth auth;
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        // Initialize Firebase Auth
-        mAuth = FirebaseAuth.getInstance();
+        // Initialize Firebase
+        auth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
 
         initializeViews();
         setupClickListeners();
@@ -60,14 +65,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void setupClickListeners() {
-        loginButton.setOnClickListener(v -> {
-            String email = emailEditText.getText().toString().trim();
-            String password = passwordEditText.getText().toString().trim();
-
-            if (validateInputs(email, password)) {
-                loginUser(email, password);
-            }
-        });
+        loginButton.setOnClickListener(v -> loginUser());
 
         registerTextView.setOnClickListener(v -> {
             startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
@@ -80,82 +78,65 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-    private boolean validateInputs(String email, String password) {
-        boolean isValid = true;
+    private void loginUser() {
+        String email = emailEditText.getText().toString().trim();
+        String password = passwordEditText.getText().toString().trim();
 
-        if (email.isEmpty()) {
+        // Validate input
+        if (TextUtils.isEmpty(email)) {
             emailInputLayout.setError("Email is required");
-            isValid = false;
-        } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            emailInputLayout.setError("Please enter a valid email address");
-            isValid = false;
-        } else {
-            emailInputLayout.setError(null);
+            return;
         }
 
-        if (password.isEmpty()) {
+        if (TextUtils.isEmpty(password)) {
             passwordInputLayout.setError("Password is required");
-            isValid = false;
-        } else if (password.length() < 6) {
-            passwordInputLayout.setError("Password must be at least 6 characters");
-            isValid = false;
-        } else {
-            passwordInputLayout.setError(null);
+            return;
         }
 
-        return isValid;
-    }
-
-    private void loginUser(String email, String password) {
-        // Show loading state
+        // Show loading indicator
         loginButton.setEnabled(false);
-        loginButton.setText("Logging in...");
 
-        mAuth.signInWithEmailAndPassword(email, password)
-            .addOnCompleteListener(this, task -> {
-                loginButton.setEnabled(true);
-                loginButton.setText("Login");
-
-                if (task.isSuccessful()) {
-                    // Sign in success
-                    FirebaseUser user = mAuth.getCurrentUser();
-                    Toast.makeText(LoginActivity.this, "Welcome back!", Toast.LENGTH_SHORT).show();
-                    startActivity(new Intent(LoginActivity.this, JobListActivity.class));
-                    overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-                    finish();
-                } else {
-                    // Sign in failed
-                    try {
-                        throw task.getException();
-                    } catch (FirebaseAuthInvalidUserException e) {
-                        emailInputLayout.setError("No account found with this email. Please register first.");
-                    } catch (FirebaseAuthInvalidCredentialsException e) {
-                        if (e.getErrorCode().equals("ERROR_WRONG_PASSWORD")) {
-                            passwordInputLayout.setError("Incorrect password. Please try again.");
-                        } else {
-                            emailInputLayout.setError("Invalid email format");
-                        }
-                    } catch (Exception e) {
-                        String errorMessage = e.getMessage();
-                        if (errorMessage != null && errorMessage.contains("network")) {
-                            Toast.makeText(LoginActivity.this, 
-                                "Please check your internet connection and try again.", 
-                                Toast.LENGTH_LONG).show();
-                        } else {
-                            Toast.makeText(LoginActivity.this, 
-                                "Login failed. Please try again.", 
-                                Toast.LENGTH_LONG).show();
-                        }
+        // Sign in user
+        auth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, task -> {
+                    loginButton.setEnabled(true);
+                    if (task.isSuccessful()) {
+                        // Check if user is admin
+                        String uid = auth.getCurrentUser().getUid();
+                        db.collection("users").document(uid)
+                                .get()
+                                .addOnSuccessListener(documentSnapshot -> {
+                                    User user = documentSnapshot.toObject(User.class);
+                                    if (user != null && user.isAdmin()) {
+                                        Toast.makeText(LoginActivity.this,
+                                                "Welcome Admin!",
+                                                Toast.LENGTH_SHORT).show();
+                                    } else {
+                                        Toast.makeText(LoginActivity.this,
+                                                "Login successful",
+                                                Toast.LENGTH_SHORT).show();
+                                    }
+                                    startActivity(new Intent(LoginActivity.this, JobAdListActivity.class));
+                                    finish();
+                                })
+                                .addOnFailureListener(e -> {
+                                    Toast.makeText(LoginActivity.this,
+                                            "Error checking user role: " + e.getMessage(),
+                                            Toast.LENGTH_SHORT).show();
+                                });
+                    } else {
+                        Toast.makeText(LoginActivity.this,
+                                "Login failed: " + task.getException().getMessage(),
+                                Toast.LENGTH_SHORT).show();
                     }
-                }
-            });
+                });
     }
 
     @Override
     protected void onStart() {
         super.onStart();
         // Check if user is signed in
-        FirebaseUser currentUser = mAuth.getCurrentUser();
+        FirebaseUser currentUser = auth.getCurrentUser();
         if (currentUser != null) {
             // User is signed in, redirect to job list
             startActivity(new Intent(LoginActivity.this, JobListActivity.class));

@@ -15,6 +15,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.example.mobilalk.model.User;
 
 public class RegisterActivity extends AppCompatActivity {
     private EditText emailEditText;
@@ -23,15 +25,17 @@ public class RegisterActivity extends AppCompatActivity {
     private Button registerButton;
     private TextView loginTextView;
     private ImageButton backButton;
-    private FirebaseAuth mAuth;
+    private FirebaseAuth auth;
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
-        // Initialize Firebase Auth
-        mAuth = FirebaseAuth.getInstance();
+        // Initialize Firebase
+        auth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
 
         emailEditText = findViewById(R.id.emailEditText);
         passwordEditText = findViewById(R.id.passwordEditText);
@@ -77,6 +81,7 @@ public class RegisterActivity extends AppCompatActivity {
         String password = passwordEditText.getText().toString().trim();
         String confirmPassword = confirmPasswordEditText.getText().toString().trim();
 
+        // Validate input
         if (TextUtils.isEmpty(email)) {
             emailEditText.setError("Email is required");
             return;
@@ -87,34 +92,45 @@ public class RegisterActivity extends AppCompatActivity {
             return;
         }
 
-        if (TextUtils.isEmpty(confirmPassword)) {
-            confirmPasswordEditText.setError("Please confirm your password");
-            return;
-        }
-
         if (!password.equals(confirmPassword)) {
             confirmPasswordEditText.setError("Passwords do not match");
             return;
         }
 
+        // Check if this is an admin registration
+        boolean isAdmin = email.equals("admin@example.com");
+
         // Show loading indicator
         registerButton.setEnabled(false);
 
-        // Create user with Firebase
-        mAuth.createUserWithEmailAndPassword(email, password)
+        // Create user
+        auth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
                     registerButton.setEnabled(true);
                     if (task.isSuccessful()) {
-                        // Sign in success
-                        Toast.makeText(RegisterActivity.this, "Registration successful!", Toast.LENGTH_SHORT).show();
-                        startActivity(new Intent(RegisterActivity.this, JobListActivity.class));
-                        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-                        finish();
+                        // Create user document in Firestore
+                        String uid = auth.getCurrentUser().getUid();
+                        User user = new User(uid, email, isAdmin);
+                        
+                        db.collection("users").document(uid)
+                                .set(user)
+                                .addOnSuccessListener(aVoid -> {
+                                    Toast.makeText(RegisterActivity.this,
+                                            "Registration successful",
+                                            Toast.LENGTH_SHORT).show();
+                                    startActivity(new Intent(RegisterActivity.this,
+                                            JobAdListActivity.class));
+                                    finish();
+                                })
+                                .addOnFailureListener(e -> {
+                                    Toast.makeText(RegisterActivity.this,
+                                            "Error creating user profile: " + e.getMessage(),
+                                            Toast.LENGTH_SHORT).show();
+                                });
                     } else {
-                        // If registration fails, display a message to the user
-                        String errorMessage = task.getException() != null ? 
-                            task.getException().getMessage() : "Registration failed";
-                        Toast.makeText(RegisterActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(RegisterActivity.this,
+                                "Registration failed: " + task.getException().getMessage(),
+                                Toast.LENGTH_SHORT).show();
                     }
                 });
     }
