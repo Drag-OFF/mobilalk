@@ -20,18 +20,7 @@
         android:theme="@style/Theme.MobilAlk"
         tools:targetApi="31">
 
-        <activity
-            android:name=".LoginActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-
-        <activity
-            android:name=".RegisterActivity"
-            android:exported="false" />
+       
 
         <activity
             android:name=".MainActivity"
@@ -43,38 +32,20 @@
         </activity>
 
         <activity
-            android:name=".JobListActivity"
-            android:exported="false" />
+            android:name=".LoginActivity"
+            android:exported="true"/>
 
         <activity
-            android:name=".JobDetailActivity"
+            android:name=".RegisterActivity"
             android:exported="false" />
-
-        <activity
-            android:name=".ItemListActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".AddItemActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".ItemDetailActivity"
-            android:exported="false"
-            android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar" />
-
+            
         <activity
             android:name=".AddJobAdActivity"
             android:exported="false" />
 
         <activity
             android:name=".JobAdListActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+            android:exported="true"/>
 
         <activity
             android:name=".JobAdDetailActivity"

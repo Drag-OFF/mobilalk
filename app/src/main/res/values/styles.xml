@@ -1,0 +1,5 @@
+<resources>
+    <style name="AppTheme.PopupMenu" parent="ThemeOverlay.AppCompat.Light">
+        <item name="android:textColor">@color/menu_text</item>
+    </style>
+</resources>

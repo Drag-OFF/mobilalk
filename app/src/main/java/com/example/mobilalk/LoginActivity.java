@@ -132,7 +132,7 @@ public class LoginActivity extends AppCompatActivity {
                 });
     }
 
-    @Override
+    /*@Override
     protected void onStart() {
         super.onStart();
         // Check if user is signed in
@@ -143,5 +143,5 @@ public class LoginActivity extends AppCompatActivity {
             overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
             finish();
         }
-    }
+    }*/
 } 

@@ -4,53 +4,24 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <androidx.appcompat.widget.Toolbar
+    <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="?attr/actionBarSize"
         android:background="?attr/colorPrimary"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        app:title="Álláshirdetés feladása" />
+        app:title="Hirdetés szerkesztése" />
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="56dp">
+        android:layout_marginTop="?attr/actionBarSize"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <ImageView
-                android:id="@+id/imageViewPhoto"
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:layout_marginBottom="8dp"
-                android:scaleType="centerCrop"
-                android:contentDescription="Álláshirdetés fotó"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
-
-            <Button
-                android:id="@+id/buttonSelectPhoto"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:text="Fotó kiválasztása"
-                app:layout_constraintTop_toBottomOf="@id/imageViewPhoto"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/buttonCamera"
-                android:layout_marginEnd="8dp" />
-
-            <Button
-                android:id="@+id/buttonCamera"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:text="Kép készítése"
-                app:layout_constraintTop_toBottomOf="@id/imageViewPhoto"
-                app:layout_constraintStart_toEndOf="@id/buttonSelectPhoto"
-                app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginStart="8dp" />
+            android:layout_height="wrap_content"
+            android:padding="16dp">
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/titleInputLayout"
@@ -59,10 +30,9 @@
                 android:hint="Cím (max 50 karakter)"
                 app:counterEnabled="true"
                 app:counterMaxLength="50"
-                app:layout_constraintTop_toBottomOf="@id/buttonCamera"
+                app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginTop="16dp">
+                app:layout_constraintEnd_toEndOf="parent">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/editTextTitle"
@@ -86,7 +56,7 @@
                     android:id="@+id/editTextDescription"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="textMultiLine"
+                    android:inputType="textCapSentences|textMultiLine"
                     android:minLines="3" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -104,14 +74,14 @@
                     android:id="@+id/editTextCategory"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="text" />
+                    android:inputType="textCapWords" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/grossSalaryInputLayout"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:hint="Bruttó bér (Ft)"
+                android:hint="Bruttó fizetés (Ft)"
                 app:layout_constraintTop_toBottomOf="@id/categoryInputLayout"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -128,7 +98,7 @@
                 android:id="@+id/locationInputLayout"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:hint="Helyszín (opcionális)"
+                android:hint="Helyszín"
                 app:layout_constraintTop_toBottomOf="@id/grossSalaryInputLayout"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -138,29 +108,29 @@
                     android:id="@+id/editTextLocation"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="text" />
+                    android:inputType="textCapWords" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <Button
-                android:id="@+id/buttonFillLocation"
-                android:layout_width="wrap_content"
+                android:id="@+id/buttonGetLocation"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Hely kitöltése GPS-ből"
+                android:text="Helyzet lekérése"
                 app:layout_constraintTop_toBottomOf="@id/locationInputLayout"
                 app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
                 android:layout_marginTop="8dp" />
 
             <Button
                 android:id="@+id/buttonSave"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Álláshirdetés feladása"
-                app:layout_constraintTop_toBottomOf="@id/buttonFillLocation"
+                android:text="Mentés"
+                app:layout_constraintTop_toBottomOf="@id/buttonGetLocation"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 android:layout_marginTop="16dp" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>
-
-</androidx.coordinatorlayout.widget.CoordinatorLayout> 
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
